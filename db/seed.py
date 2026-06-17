@@ -13,6 +13,10 @@ def load_venues():
 def load_events():
     with open("db/data/events.json", "r") as file:
         return json.load(file)
+    
+def load_rsvps():
+    with open("db/data/rsvps.json", "r") as file:
+        return json.load(file)
 
 
 
@@ -99,16 +103,45 @@ def insert_events(cursor, events):
             (event["title"], event["description"], event["starts_at"], event["ends_at"], event["organiser_id"], event["venue_id"])
         )
 
+
+
+
+
+def drop_rsvps_table(cursor):
+    cursor.execute("DROP TABLE IF EXISTS rsvps;")
+
+def create_rsvps_table(cursor):
+    cursor.execute("""
+            CREATE TABLE rsvps(
+                id SERIAL PRIMARY KEY,
+                attendee_id INT REFERENCES users(id),
+                event_id INT REFERENCES events(id),
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+        """)
+
+def insert_rsvps(cursor, rsvps):
+    for rsvp in rsvps:
+        cursor.execute("""
+            INSERT INTO rsvps(attendee_id, event_id)
+            VALUES (%s, %s);
+            """,
+            (rsvp["attendee_id"], rsvp["event_id"])
+        )
+        
+
 def seed():
     cursor = connection.cursor()
 
+    drop_rsvps_table(cursor)
     drop_events_table(cursor)
-    drop_users_table(cursor)
     drop_venues_table(cursor)
+    drop_users_table(cursor)
 
     create_users_table(cursor)
     create_venues_table(cursor)
     create_events_table(cursor)
+    create_rsvps_table(cursor)
 
     users = load_users()
     insert_users(cursor, users)
@@ -118,7 +151,10 @@ def seed():
 
     events = load_events()
     insert_events(cursor, events)
-    
+
+    rsvps = load_rsvps()
+    insert_rsvps(cursor, rsvps)
+
     connection.commit()
     cursor.close()
     connection.close()
