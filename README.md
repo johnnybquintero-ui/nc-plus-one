@@ -4,3 +4,10 @@ NC Plus One is a Python and PostgreSQL project. It utilises relational databases
 ## Technologies
 - Python
 - PostgreSQL
+
+## Database Setup
+
+To create a fresh local database, run:
+
+```bash
+psql -d postgres -f db/setup.sql
