@@ -1,2 +1,4 @@
 .venv
 nc-plus-one-seeding.md
+credentials.py
+**/__pycache__/

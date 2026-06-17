@@ -11,3 +11,8 @@ To create a fresh local database, run:
 
 ```bash
 psql -d postgres -f db/setup.sql
+```
+
+## Database Credentials
+
+Create a `credentials.py` file containing your local database credentials. This file should not be committed.
