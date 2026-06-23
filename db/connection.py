@@ -1,4 +1,12 @@
-import psycopg2
-from credentials import dbname
+import os
 
-connection = psycopg2.connect(dbname=dbname)
+import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DATABASE_URL = os.environ["DATABASE_URL"]
+print("CONNECTED TO:", DATABASE_URL)
+
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
