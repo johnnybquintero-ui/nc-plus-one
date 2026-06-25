@@ -1,6 +1,7 @@
 import psycopg2
-from connection import connection
+from connection import get_connection
 import json
+from src.auth import hash_password
 
 def load_users():
     with open("db/data/users.json", "r") as file:
@@ -40,14 +41,14 @@ def create_users_table(cursor):
 
 def insert_users(cursor, users):
     for user in users:
+        hashed_pw = hash_password(user["password"])
+
         cursor.execute("""
             INSERT INTO users (email, password, name)
             VALUES (%s, %s, %s);
             """,
-            (user["email"], user["password"], user["name"])
+            (user["email"], hashed_pw, user["name"])
         )
-
-
 
 
 
@@ -131,6 +132,7 @@ def insert_rsvps(cursor, rsvps):
         
 
 def seed():
+    connection = get_connection()
     cursor = connection.cursor()
 
     drop_rsvps_table(cursor)
