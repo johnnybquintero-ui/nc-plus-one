@@ -37,7 +37,7 @@ Database Design
 The database has been designed using relational modelling principles and normalisation techniques. Relationships between entities are enforced using primary and foreign keys.
 
 <p align="center">
-  <img src="images/erd.png" width="700">
+  <img src="images/ERD.png" width="700">
 </p>
 
 Running the Project
