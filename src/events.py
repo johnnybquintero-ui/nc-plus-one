@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 from fastapi import APIRouter, HTTPException
 from db.connection import get_connection
 
@@ -28,15 +27,15 @@ def get_events():
     conn.close()
 
     events = [
-        {
-            "id": row[0],
-            "title": row[1],
-            "starts_at": row[2].isoformat(),
-            "ends_at": row[3].isoformat(),
-            "location": row[4],
-        }
-        for row in rows
-    ]
+    {
+        "id": row["id"],
+        "title": row["title"],
+        "starts_at": row["starts_at"].isoformat(),
+        "ends_at": row["ends_at"].isoformat(),
+        "location": row["name"],
+    }
+    for row in rows
+]
 
     return {"events": events}
 
@@ -73,16 +72,16 @@ def get_event(event_id: int):
         detail={"code": "NOT_FOUND", "message": "Event not found"},
     )
 
-    event ={
-            "id": row[0],
-            "title": row[1],
-            "description": row[2],
-            "starts_at": row[3].isoformat(),
-            "ends_at": row[4].isoformat(),
-            "location": row[5],
-            "address": row[6],
-            "capacity": row[7],
-            "created_at": row[8].isoformat(),
-        }
+    event = {
+    "id": row["id"],
+    "title": row["title"],
+    "description": row["description"],
+    "starts_at": row["starts_at"].isoformat(),
+    "ends_at": row["ends_at"].isoformat(),
+    "location": row["name"],
+    "address": row["address"],
+    "capacity": row["capacity"],
+    "created_at": row["created_at"].isoformat(),
+}
 
     return {"event": event}
