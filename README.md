@@ -34,8 +34,6 @@ The project explores modern software engineering and data engineering practices 
 - Secure password hashing using bcrypt
 - User registration and login
 - Protected endpoints
-- RSVP functionality
-- Additional CRUD operations
 
 ---
 
