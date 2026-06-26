@@ -19,15 +19,6 @@ The project explores modern software engineering and data engineering practices 
 
 ---
 
-## Current API Endpoints
-
-| Method | Endpoint | Description |
-| :----- | :------- | :---------- |
-| `GET` | `/api/events` | Returns a list of all events with venue information |
-| `GET` | `/api/events/{event_id}` | Returns detailed information for a specific event |
-
----
-
 ## Currently in Development
 
 - JWT authentication
@@ -39,16 +30,67 @@ The project explores modern software engineering and data engineering practices 
 
 ## Technologies
 
-- Python
-- PostgreSQL
-- SQL
-- FastAPI
-- Git
-- pytest
-- JWT *(in progress)*
-- bcrypt *(in progress)*
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Python | 3.14 | Programming language |
+| PostgreSQL | 17 | Relational database |
+| FastAPI | 0.138.0 | REST API framework |
+| Uvicorn | 0.49.0 | ASGI server |
+| psycopg2 | 2.9.12 | PostgreSQL database adapter |
+| pytest | 9.1.1 | Integration testing |
+| PyJWT | 2.13.0 | JSON Web Token authentication |
+| bcrypt | 5.0.0 | Password hashing |
+| python-dotenv | 1.2.2 | Environment variable management |
+| httpx2 | 2.4.0 | HTTP client for API testing |
 
 ---
+
+## Installation
+
+Clone the repository and navigate into the project directory:
+
+```bash
+git clone <repository-url>
+cd nc-plus-one
+```
+
+---
+
+### Installing Python Dependencies
+
+Install all required Python packages inside a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+---
+
+## Environment Configuration
+
+This project requires both a `.env` file and a `credentials.py` file for local development.
+
+### Create a `.env` file
+
+Create a `.env` file in the project root with the following variables:
+
+```text
+DATABASE_URL=postgresql:///nc_plus_one
+JWT_SECRET=your_generated_secret
+```
+
+### Create `credentials.py`
+
+Create a `credentials.py` file in the project root containing your PostgreSQL connection details:
+
+```python
+dbname = "nc_plus_one"
+host = "localhost"
+```
+
+> **Note:** Both `.env` and `credentials.py` contain local configuration and are excluded from version control by `.gitignore`. Do not commit these files.
 
 ## Database Design
 
@@ -59,19 +101,39 @@ The database has been designed using relational modelling principles and normali
 </p>
 
 ---
+## Project Setup & Database Seeding
 
-## Running the Project
-
-### Database Setup
-
-Create a fresh local database by running:
+Create the project database:
 
 ```bash
-psql -d postgres -f db/setup.sql
+psql -d postgres -f db/setup.sql && python db/seed.py
 ```
 
-### Database Credentials
+The seed script tears down any existing tables before recreating and repopulating the database.
 
-Create a `credentials.py` file containing your local PostgreSQL credentials.
+## Running the API
 
-> **Note:** This file is excluded from version control and should **not** be committed.
+Start the FastAPI development server:
+
+```bash
+uvicorn main:app --reload
+```
+
+Once the server is running, the API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive API documentation can be accessed at:
+
+- Swagger UI: http://127.0.0.1:8000/docs
+- ReDoc: http://127.0.0.1:8000/redoc
+
+## Running Tests
+
+Run the full integration test suite:
+
+```bash
+PYTHONPATH=$PWD pytest
+```
