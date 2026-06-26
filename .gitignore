@@ -3,3 +3,5 @@ portfolio_nc_plus_one.md
 credentials.py
 **/__pycache__/
 .env
+JWT_auth.png
+.gitignore
