@@ -3,7 +3,7 @@ import bcrypt
 import jwt
 
 from datetime import datetime, timedelta, timezone
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from src.schemas import CredentialsRequest, RegisterCredentials
@@ -28,7 +28,7 @@ def create_access_token(user_id: int)->str:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
-def get_user_by_email(email):
+def get_user_by_email(email: str):
     conn = get_connection()
     with conn.cursor() as cur:
         cur.execute(
@@ -40,6 +40,15 @@ def get_user_by_email(email):
             (email,),
         )
         return cur.fetchone()
+    
+def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms = [JWT_ALGORITHM])
+        return int(payload["sub"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Could not validate token")
 
 @router.post("/api/auth/login")
 def login_user(payload:CredentialsRequest):
@@ -76,3 +85,4 @@ def register_user(payload:RegisterCredentials):
         new_id = cur.fetchone()["id"]
         conn.commit()
         return {"user_id": new_id, "name": payload.name, "email": payload.email, "status": "registered"}
+    
