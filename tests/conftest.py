@@ -10,6 +10,13 @@ def client():
 
 @pytest.fixture
 def sample_user():
+    """
+    Create a temporary user in the test database.
+
+    Yields the user's id, email and plain-text password for use in
+    authentication tests, then removes the user after the test completes.
+    """
+
     conn = get_connection()
     cur = conn.cursor()
 
@@ -31,6 +38,7 @@ def sample_user():
         "id": user_id,
         "email": "johnny@example.com",
         "password": password,
+        "name": "Johnny Quintero",
     }
 
     cur.execute(
@@ -38,3 +46,28 @@ def sample_user():
         (user_id,)
     )
     conn.commit()
+
+@pytest.fixture
+def cleanup_users():
+    """
+    Track test user emails and delete them after the test.
+
+    Tests can append created email addresses to the yielded list to ensure
+    any temporary users are removed during teardown.
+    """
+    
+    emails = []
+    yield emails
+
+    if emails:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            "DELETE FROM users WHERE email = ANY(%s)",
+            (emails,),
+        )
+
+        conn.commit()
+        cur.close()
+        conn.close()
