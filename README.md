@@ -13,6 +13,10 @@ The project explores modern software engineering and data engineering practices 
 - Relational PostgreSQL database designed from an Entity Relationship Diagram (ERD)
 - Automated database creation and seeding using Python
 - RESTful API built with FastAPI
+- User registration with secure password hashing using bcrypt
+- User authentication using JWT bearer tokens
+- Protected API endpoints using FastAPI dependency injection (`Depends`)
+- Event RSVP endpoint for authenticated users
 - SQL joins to retrieve related event and venue data
 - Integration testing with pytest
 - Git feature branch workflow
@@ -21,10 +25,12 @@ The project explores modern software engineering and data engineering practices 
 
 ## Currently in Development
 
-- JWT authentication
-- Secure password hashing using bcrypt
-- User registration and login
-- Protected endpoints
+- RSVP cancellation
+- Event creation, editing and management
+- Organiser-only endpoints and authorisation
+- Event attendee management
+- User event dashboards using SQL window functions
+- Organiser statistics and analytics
 
 ---
 
