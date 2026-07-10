@@ -108,7 +108,9 @@ JWT_SECRET=
 > `.env.example` contains the required variable names only and can be safely committed to the repository. Your `.env` file contains your local configuration and must **not** be committed.
 
 ---
-## Terraform Setup
+## Infrastructure
+
+## Terraform
 
 Terraform stores its state remotely in an S3 backend.
 
@@ -123,6 +125,13 @@ terraform -chdir=terraform init
 ```
 
 Terraform will configure the S3 backend and use it to store the project's state.
+
+### EC2
+
+Terraform provisions an Amazon EC2 instance using:
+
+- Instance type: `t2.micro`
+- Operating system: Latest Ubuntu Server LTS (selected dynamically using the Terraform `aws_ami` data source)
 
 ---
 ## Database Design
