@@ -5,11 +5,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.environ["DATABASE_URL"]
-print("CONNECTED TO:", DATABASE_URL)
+HOST = os.environ["PGHOST"]
+PORT = os.environ["PGPORT"]
+DATABASE = os.environ["PGDATABASE"]
+USER = os.environ["PGUSER"]
+PASSWORD = os.environ["PGPASSWORD"]
 
 def get_connection():
     return psycopg2.connect(
-        DATABASE_URL,
+        host=HOST,
+        port=PORT,
+        dbname=DATABASE,
+        user=USER,
+        password=PASSWORD,
         cursor_factory=RealDictCursor,
     )
+
+print(
+    "CONNECTED TO:",
+    f"Host: {HOST}",
+    f"Database: {DATABASE}",
+    f"User: {USER}",
+)

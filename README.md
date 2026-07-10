@@ -20,6 +20,7 @@ The project explores modern software engineering and data engineering practices 
 - SQL joins to retrieve related event and venue data
 - Integration testing with pytest
 - Git feature branch workflow
+- Application health check endpoint (`GET /api/health`)
 
 ---
 
@@ -76,28 +77,37 @@ python -m pip install -r requirements.txt
 
 ## Environment Configuration
 
-This project requires both a `.env` file and a `credentials.py` file for local development.
+This project uses environment variables to configure the PostgreSQL connection and JWT authentication.
 
-### Create a `.env` file
+1. Copy the example configuration:
 
-Create a `.env` file in the project root with the following variables:
+```bash
+cp .env.example .env
+```
+
+2. Update `.env` with your local PostgreSQL and JWT values:
 
 ```text
-DATABASE_URL=postgresql:///nc_plus_one
-JWT_SECRET=your_generated_secret
+PGHOST=
+PGPORT=
+PGDATABASE=
+PGUSER=
+PGPASSWORD=
+JWT_SECRET=
 ```
 
-### Create `credentials.py`
+| Variable | Description |
+|----------|-------------|
+| `PGHOST` | PostgreSQL server hostname |
+| `PGPORT` | PostgreSQL server port |
+| `PGDATABASE` | PostgreSQL database name |
+| `PGUSER` | PostgreSQL username |
+| `PGPASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | Secret used to sign JWTs |
 
-Create a `credentials.py` file in the project root containing your PostgreSQL connection details:
+> `.env.example` contains the required variable names only and can be safely committed to the repository. Your `.env` file contains your local configuration and must **not** be committed.
 
-```python
-dbname = "nc_plus_one"
-host = "localhost"
-```
-
-> **Note:** Both `.env` and `credentials.py` contain local configuration and are excluded from version control by `.gitignore`. Do not commit these files.
-
+---
 ## Database Design
 
 The database has been designed using relational modelling principles and normalisation techniques. Relationships between entities are enforced using primary and foreign keys.
@@ -135,6 +145,7 @@ Interactive API documentation can be accessed at:
 
 - Swagger UI: http://127.0.0.1:8000/docs
 - ReDoc: http://127.0.0.1:8000/redoc
+
 
 ## Running Tests
 

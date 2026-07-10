@@ -9,3 +9,7 @@ app = FastAPI(title="NC Plus One Events API", debug=True)
 app.include_router(events_router)
 app.include_router(auth_router)
 app.include_router(rsvp_router)
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "healthy"}
