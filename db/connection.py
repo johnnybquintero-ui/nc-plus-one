@@ -20,10 +20,3 @@ def get_connection():
         password=PASSWORD,
         cursor_factory=RealDictCursor,
     )
-
-print(
-    "CONNECTED TO:",
-    f"Host: {HOST}",
-    f"Database: {DATABASE}",
-    f"User: {USER}",
-)

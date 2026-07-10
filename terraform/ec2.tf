@@ -20,11 +20,11 @@ resource "aws_instance" "nc_plus_one" {
     python3 -m venv .venv
     .venv/bin/pip install -r requirements.txt
 
-    export PGHOST=localhost
-    export PGPORT=5432
+    export PGHOST=${aws_db_instance.nc_plus_one.address}
+    export PGPORT=${aws_db_instance.nc_plus_one.port}
     export PGDATABASE=nc_plus_one
-    export PGUSER=ubuntu
-    export PGPASSWORD=
+    export PGUSER=${var.db_username}
+    export PGPASSWORD=${var.db_password}
     export JWT_SECRET=temporary-dev-secret
 
     nohup .venv/bin/uvicorn main:app \
