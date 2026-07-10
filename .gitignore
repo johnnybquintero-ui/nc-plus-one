@@ -6,3 +6,6 @@ credentials.py
 JWT_auth.png
 .gitignore
 cloud_review.md
+.terraform/
+*.tfstate
+*.tfstate.backup

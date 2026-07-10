@@ -108,6 +108,23 @@ JWT_SECRET=
 > `.env.example` contains the required variable names only and can be safely committed to the repository. Your `.env` file contains your local configuration and must **not** be committed.
 
 ---
+## Terraform Setup
+
+Terraform stores its state remotely in an S3 backend.
+
+### Bootstrap the backend
+
+1. Create a globally unique S3 bucket to store the Terraform state.
+2. Update `terraform/backend.tf` with your bucket name.
+3. Ensure the bucket exists before running:
+
+```bash
+terraform -chdir=terraform init
+```
+
+Terraform will configure the S3 backend and use it to store the project's state.
+
+---
 ## Database Design
 
 The database has been designed using relational modelling principles and normalisation techniques. Relationships between entities are enforced using primary and foreign keys.
