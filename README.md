@@ -110,7 +110,7 @@ JWT_SECRET=
 ---
 ## Infrastructure
 
-## Terraform
+### Terraform
 
 Terraform stores its state remotely in an S3 backend.
 
@@ -132,6 +132,19 @@ Terraform provisions an Amazon EC2 instance using:
 
 - Instance type: `t2.micro`
 - Operating system: Latest Ubuntu Server LTS (selected dynamically using the Terraform `aws_ami` data source)
+
+### RDS PostgreSQL
+
+Terraform provisions a private PostgreSQL RDS instance using:
+
+- **Instance class:** `db.t4g.micro`
+- **Allocated storage:** `20 GiB`
+- **Public access:** disabled
+- **Database port:** `5432`
+- **Network access:** permitted only from the EC2 application security group
+
+Database credentials are supplied through a local, gitignored
+`terraform.tfvars` file and are not committed to the repository.
 
 ---
 ## Database Design

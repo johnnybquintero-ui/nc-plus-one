@@ -49,3 +49,21 @@ resource "aws_security_group" "nc_plus_one_http" {
     Name = "nc-plus-one-http"
   }
 }
+
+resource "aws_security_group" "nc_plus_one_rds" {
+  name        = "nc-plus-one-rds"
+  description = "Allow PostgreSQL access from the application EC2 instance"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description     = "PostgreSQL from EC2"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nc_plus_one.id]
+  }
+
+  tags = {
+    Name = "nc-plus-one-rds"
+  }
+}

@@ -4,10 +4,10 @@ credentials.py
 **/__pycache__/
 .env
 JWT_auth.png
-.gitignore
 cloud_review.md
 .terraform/
 *.tfstate
 *.tfstate.backup
 *.pem
 *.ssh
+*.tfvars
