@@ -2,36 +2,38 @@
 
 ## Overview
 
-NC Plus One is an event management application developed as part of the Northcoders Data Engineering, AI & Machine Learning Bootcamp.
-
-The project explores modern software engineering and data engineering practices by modelling an event management platform using a relational PostgreSQL database and exposing data through a RESTful API built with FastAPI. As the project develops, it will continue to evolve with additional functionality and technologies introduced throughout the bootcamp, providing an end-to-end application for exploring database design, API development, authentication, testing and modern engineering practices.
+The project explores modern software engineering and data engineering practices by modelling an event management platform using a relational PostgreSQL database, exposing data through a RESTful FastAPI application, and provisioning cloud infrastructure with Terraform on AWS. As the project develops, additional features and deployment automation will continue to be introduced, providing an end-to-end platform for exploring database design, API development, cloud infrastructure, authentication, testing and modern engineering practices.
 
 ---
 
 ## Current Features
 
-- Relational PostgreSQL database designed from an Entity Relationship Diagram (ERD)
-- Automated database creation and seeding using Python
-- RESTful API built with FastAPI
-- User registration with secure password hashing using bcrypt
-- User authentication using JWT bearer tokens
-- Protected API endpoints using FastAPI dependency injection (`Depends`)
-- Event RSVP endpoint for authenticated users
-- SQL joins to retrieve related event and venue data
-- Integration testing with pytest
-- Git feature branch workflow
-- Application health check endpoint (`GET /api/health`)
+Relational PostgreSQL database designed from an Entity Relationship Diagram (ERD)
+Automated database creation and seeding using Python
+RESTful API built with FastAPI
+User registration with secure password hashing using bcrypt
+User authentication using JWT bearer tokens
+Protected API endpoints using FastAPI dependency injection
+Event RSVP endpoint for authenticated users
+SQL joins to retrieve related event and venue data
+Integration testing with pytest
+Infrastructure provisioned with Terraform
+Remote Terraform state stored in Amazon S3
+Automated deployment of the FastAPI application to Amazon EC2
+Private PostgreSQL database hosted on Amazon RDS
+Remote database seeding from the deployed EC2 instance
+Application health check endpoint (GET /api/health)
 
 ---
 
 ## Currently in Development
 
-- RSVP cancellation
-- Event creation, editing and management
-- Organiser-only endpoints and authorisation
-- Event attendee management
-- User event dashboards using SQL window functions
-- Organiser statistics and analytics
+RSVP cancellation
+Event creation, editing and management
+Organiser-only endpoints and authorisation
+Event attendee management
+CI/CD pipeline for automated infrastructure and application deployment
+Infrastructure monitoring and logging
 
 ---
 
@@ -171,6 +173,52 @@ After seeding, verify the deployed API is serving data from the remote database:
 
 ```text
 http://<ec2-public-ip>:8000/api/events
+```
+## Deployment
+
+After completing the infrastructure prerequisites described above:
+
+1. Provision the infrastructure:
+
+```bash
+terraform -chdir=terraform apply
+```
+
+2. Retrieve the Terraform outputs:
+
+```bash
+terraform -chdir=terraform output
+```
+
+3. SSH to the EC2 instance using the public IP output and wait for the deployment to complete
+
+4. Before running the seed script, configure the PostgreSQL environment variables in the current SSH session using:
+   - the RDS endpoint and port from the Terraform outputs;
+   - the database username and password stored in the local, gitignored `terraform.tfvars` file.
+
+5. Activate the virtual environment and seed the remote database:
+
+```bash
+cd ~/nc-plus-one
+
+export PYTHONPATH=$PWD
+
+source .venv/bin/activate
+python db/seed.py
+```
+
+6. Verify the deployment from your local machine:
+
+```bash
+curl "http://$(terraform -chdir=terraform output -raw instance_public_ip):8000/api/health"
+
+curl "http://$(terraform -chdir=terraform output -raw instance_public_ip):8000/api/events"
+```
+
+7. Destroy the infrastructure when no longer required:
+
+```bash
+terraform -chdir=terraform destroy
 ```
 
 ---
