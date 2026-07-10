@@ -114,7 +114,7 @@ JWT_SECRET=
 
 Terraform stores its state remotely in an S3 backend.
 
-### Bootstrap the backend
+#### Bootstrap the backend
 
 1. Create a globally unique S3 bucket to store the Terraform state.
 2. Update `terraform/backend.tf` with your bucket name.
@@ -146,6 +146,33 @@ Terraform provisions a private PostgreSQL RDS instance using:
 Database credentials are supplied through a local, gitignored
 `terraform.tfvars` file and are not committed to the repository.
 
+### Seeding the Remote Database
+
+The application connects to PostgreSQL using the following environment variables, which must be configured before running the seed script:
+
+```text
+PGHOST
+PGPORT
+PGDATABASE
+PGUSER
+PGPASSWORD
+```
+
+From a machine with network access to the private RDS instance (such as the deployed EC2 instance), activate the project's virtual environment and run:
+
+```bash
+export PYTHONPATH=$PWD
+
+source .venv/bin/activate
+python db/seed.py
+```
+
+After seeding, verify the deployed API is serving data from the remote database:
+
+```text
+http://<ec2-public-ip>:8000/api/events
+```
+
 ---
 ## Database Design
 
@@ -156,15 +183,20 @@ The database has been designed using relational modelling principles and normali
 </p>
 
 ---
-## Project Setup & Database Seeding
+## Local Database Setup & Seeding
 
-Create the project database:
+These steps are intended for **local development** using a locally hosted PostgreSQL database.
+
+Create and seed the local database:
 
 ```bash
-psql -d postgres -f db/setup.sql && python db/seed.py
+psql -d postgres -f db/setup.sql
+python db/seed.py
 ```
 
 The seed script tears down any existing tables before recreating and repopulating the database.
+
+> To seed the **remote RDS** instance, follow the instructions in the **Infrastructure → Seeding the Remote Database** section.
 
 ## Running the API
 
