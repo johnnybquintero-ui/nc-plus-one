@@ -8,21 +8,21 @@ The project explores modern software engineering and data engineering practices 
 
 ## Current Features
 
-Relational PostgreSQL database designed from an Entity Relationship Diagram (ERD)
-Automated database creation and seeding using Python
-RESTful API built with FastAPI
-User registration with secure password hashing using bcrypt
-User authentication using JWT bearer tokens
-Protected API endpoints using FastAPI dependency injection
-Event RSVP endpoint for authenticated users
-SQL joins to retrieve related event and venue data
-Integration testing with pytest
-Infrastructure provisioned with Terraform
-Remote Terraform state stored in Amazon S3
-Automated deployment of the FastAPI application to Amazon EC2
-Private PostgreSQL database hosted on Amazon RDS
-Remote database seeding from the deployed EC2 instance
-Application health check endpoint (GET /api/health)
+- Relational PostgreSQL database designed from an Entity Relationship Diagram (ERD)
+- Automated database creation and seeding using Python
+- RESTful API built with FastAPI
+- User registration with secure password hashing using bcrypt
+- User authentication using JWT bearer tokens
+- Protected API endpoints using FastAPI dependency injection
+- Event RSVP endpoint for authenticated users
+- SQL joins to retrieve related event and venue data
+- Integration testing with pytest
+- Infrastructure provisioned with Terraform
+- Remote Terraform state stored in Amazon S3
+- Automated deployment of the FastAPI application to Amazon EC2
+- Private PostgreSQL database hosted on Amazon RDS
+- Remote database seeding from the deployed EC2 instance
+- Application health check endpoint (`GET /api/health`)
 
 ---
 
