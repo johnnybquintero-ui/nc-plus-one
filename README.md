@@ -26,14 +26,14 @@ The project explores modern software engineering and data engineering practices 
 
 ---
 
-## Currently in Development
+## Planned Features
 
-RSVP cancellation
-Event creation, editing and management
-Organiser-only endpoints and authorisation
-Event attendee management
-CI/CD pipeline for automated infrastructure and application deployment
-Infrastructure monitoring and logging
+- RSVP cancellation
+- Event creation, editing and management
+- Organiser-only endpoints and authorisation
+- Event attendee management
+- CI/CD pipeline for automated infrastructure and application deployment
+- Infrastructure monitoring and logging
 
 ---
 
