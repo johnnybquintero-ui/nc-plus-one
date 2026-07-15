@@ -48,3 +48,51 @@ def test_create_rsvp_responds_with_409_if_user_has_already_rsvped(
 
     assert response.status_code == 409
     assert response.json()["detail"] == "User has already RSVPed to this event"
+
+def test_create_rsvp_responds_with_401_if_token_missing(
+    client,
+    sample_event,
+):
+    response = client.post(
+        f"/api/events/{sample_event['id']}/rsvp"
+    )
+
+    assert response.status_code == 401
+
+def test_delete_rsvp_responds_with_204_on_success(
+    client,
+    sample_event,
+    auth_headers,
+):
+    client.post(
+    f"/api/events/{sample_event['id']}/rsvp",
+    headers=auth_headers,
+)
+    response = client.delete(
+    f"/api/events/{sample_event['id']}/rsvp/me",
+    headers=auth_headers,   
+    )
+    assert response.status_code == 204
+
+def test_delete_rsvp_returns_401_without_valid_token(
+    client,
+    sample_event,
+):
+    response = client.delete(
+    f"/api/events/{sample_event['id']}/rsvp/me",
+    headers={
+            "Authorization": "Bearer not-a-real-token"
+        },   
+    )
+    assert response.status_code == 401
+
+def test_delete_rsvp_responds_with_404_if_rsvp_does_not_exist(
+    client,
+    sample_event,
+    auth_headers,
+):
+    response = client.delete(
+    f"/api/events/{sample_event['id']}/rsvp/me",
+    headers=auth_headers,   
+    )
+    assert response.status_code == 404

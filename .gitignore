@@ -11,3 +11,5 @@ cloud_review.md
 *.pem
 *.ssh
 *.tfvars
+checklist.md
+.vscode/settings.json

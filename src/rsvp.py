@@ -65,3 +65,28 @@ def create_rsvp(
         conn.commit()
 
     return {"rsvp": rsvp}
+
+@router.delete("/api/events/{event_id}/rsvp/me", status_code=204)
+def delete_rsvp(
+    event_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+):
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute ("DELETE FROM rsvps WHERE event_id = (%s) AND attendee_id = (%s)",
+            (event_id, current_user_id),
+            )
+        
+        if cur.rowcount == 0:
+            raise HTTPException(
+            status_code=404,
+            detail="RSVP not found",
+        )
+
+        conn.commit()
+
+    finally:
+        conn.close()
+        
