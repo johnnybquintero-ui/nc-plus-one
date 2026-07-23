@@ -5,19 +5,18 @@ from db.connection import get_connection
 router = APIRouter()
 
 def get_event_by_id(event_id: int):
-    conn = get_connection()
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT *
+                FROM events
+                WHERE id = %s
+                """,
+                (event_id,),
+            )
 
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT *
-            FROM events
-            WHERE id = %s
-            """,
-            (event_id,),
-        )
-
-        return cur.fetchone()
+            return cur.fetchone()
     
 def get_rsvp(attendee_id: int, event_id: int):
     with get_connection() as conn:
@@ -44,24 +43,46 @@ def create_rsvp(
     if not event:
         raise HTTPException(
             status_code=404,
-            detail="Event not found",
+            detail={
+                "code": "NOT_FOUND",
+                "message": "Event not found",
+            },
         )
     
-    rsvp = get_rsvp(current_user_id, event_id)
+    existing_rsvp = get_rsvp(current_user_id, event_id)
 
-    if rsvp:
+    if existing_rsvp:
         raise HTTPException(
             status_code=409,
-            detail="User has already RSVPed to this event",
+            detail={
+                "code": "CONFLICT",
+                "message": "User has already RSVPed to this event",
+            },
         )
 
-    conn = get_connection()
-    with conn.cursor() as cur:
-        cur.execute ("INSERT INTO rsvps (attendee_id, event_id) VALUES (%s, %s) RETURNING id, attendee_id, event_id, created_at",
-        (current_user_id, event_id),
-        )
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO rsvps (
+                    attendee_id,
+                    event_id
+                )
+                VALUES (%s, %s)
+                RETURNING
+                    id,
+                    attendee_id,
+                    event_id,
+                    created_at
+                """,
+                (
+                    current_user_id,
+                    event_id,
+                ),
+            )
 
-        rsvp = cur.fetchone()
+            rsvp = cur.fetchone()
+
         conn.commit()
 
     return {"rsvp": rsvp}
@@ -71,22 +92,25 @@ def delete_rsvp(
     event_id: int,
     current_user_id: int = Depends(get_current_user_id),
 ):
-    conn = get_connection()
-
-    try:
+    with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute ("DELETE FROM rsvps WHERE event_id = (%s) AND attendee_id = (%s)",
-            (event_id, current_user_id),
+            cur.execute(
+                """
+                DELETE FROM rsvps
+                WHERE event_id = %s
+                  AND attendee_id = %s
+                """,
+                (event_id, current_user_id),
             )
-        
-        if cur.rowcount == 0:
-            raise HTTPException(
-            status_code=404,
-            detail="RSVP not found",
-        )
+
+            if cur.rowcount == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail={
+                        "code": "NOT_FOUND",
+                        "message": "RSVP not found",
+                    },
+                )
 
         conn.commit()
-
-    finally:
-        conn.close()
         

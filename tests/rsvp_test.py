@@ -25,7 +25,8 @@ def test_create_rsvp_responds_with_404_if_event_does_not_exist(client, auth_head
     response = client.post("/api/events/99999/rsvp", headers=auth_headers)
 
     assert response.status_code == 404
-    assert response.json()["detail"] == "Event not found"
+    assert response.json()["detail"]["message"] == "Event not found"
+    assert response.json()["detail"]["code"] == "NOT_FOUND"
 
 def test_create_rsvp_responds_with_409_if_user_has_already_rsvped(
     client,
@@ -47,7 +48,8 @@ def test_create_rsvp_responds_with_409_if_user_has_already_rsvped(
     )
 
     assert response.status_code == 409
-    assert response.json()["detail"] == "User has already RSVPed to this event"
+    assert response.json()["detail"]["message"] == "User has already RSVPed to this event"
+    assert response.json()["detail"]["code"] == "CONFLICT"
 
 def test_create_rsvp_responds_with_401_if_token_missing(
     client,
