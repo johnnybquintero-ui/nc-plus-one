@@ -3,6 +3,7 @@ from main import app
 import pytest
 from src.auth import hash_password, create_access_token
 from db.connection import get_connection
+from uuid import uuid4
 
 @pytest.fixture
 def client():
@@ -11,45 +12,79 @@ def client():
 @pytest.fixture
 def sample_user():
     """
-    Create a temporary user in the test database.
-
-    Yields the user's id, email and plain-text password for use in
-    authentication tests, then removes the user after the test completes.
+    Create a temporary user for a test and remove it afterwards.
     """
 
     password = "password123"
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO users (email, password, name)
-                VALUES (%s, %s, %s)
-                RETURNING id
-                """,
-                ("johnny@example.com", hash_password(password), "Johnny Quintero"),
-            )
+    email = f"johnny-{uuid4()}@example.com"
+    user_id = None
 
-            user_id = cur.fetchone()["id"]
-            conn.commit()
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO users (email, password, name)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                    """,
+                    (
+                        email,
+                        hash_password(password),
+                        "Johnny Quintero",
+                    ),
+                )
 
-            yield {
-                "id": user_id,
-                "email": "johnny@example.com",
-                "password": password,
-                "name": "Johnny Quintero",
-            }
-
-            cur.execute(
-                "DELETE FROM rsvps WHERE attendee_id = %s",
-                (user_id,),
-            )
-
-            cur.execute(
-                "DELETE FROM users WHERE id = %s",
-                (user_id,),
-            )
+                user_id = cur.fetchone()["id"]
 
             conn.commit()
+
+        yield {
+            "id": user_id,
+            "email": email,
+            "password": password,
+            "name": "Johnny Quintero",
+        }
+
+    finally:
+        if user_id is not None:
+            with get_connection() as conn:
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            """
+                            DELETE FROM rsvps
+                            WHERE attendee_id = %s
+                               OR event_id IN (
+                                   SELECT id
+                                   FROM events
+                                   WHERE organiser_id = %s
+                               )
+                            """,
+                            (user_id, user_id),
+                        )
+
+                        cur.execute(
+                            """
+                            DELETE FROM events
+                            WHERE organiser_id = %s
+                            """,
+                            (user_id,),
+                        )
+
+                        cur.execute(
+                            """
+                            DELETE FROM users
+                            WHERE id = %s
+                            """,
+                            (user_id,),
+                        )
+
+                    conn.commit()
+
+                except Exception:
+                    conn.rollback()
+                    raise
 
 @pytest.fixture
 def cleanup_users():

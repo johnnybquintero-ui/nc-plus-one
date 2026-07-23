@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from src.auth import get_current_user_id
 from db.connection import get_connection
+from src.schemas import CreateEventRequest
+from pydantic import ValidationError
 
 router = APIRouter()
 
@@ -83,5 +86,55 @@ def get_event(event_id: int):
     "capacity": row["capacity"],
     "created_at": row["created_at"].isoformat(),
 }
+
+    return {"event": event}
+
+@router.post("/api/events", status_code=201)
+def create_event(
+    payload: dict,
+    current_user_id: int = Depends(get_current_user_id),
+):
+    try:
+        payload = CreateEventRequest(**payload)
+    except ValidationError:
+        raise HTTPException(
+            status_code=400,
+            detail="Malformed request body or missing required fields",
+        )
+    
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute ("""
+                INSERT INTO events (
+                    title,
+                    description,
+                    starts_at,
+                    ends_at,
+                    venue_id,
+                    organiser_id
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING
+                    id,
+                    title,
+                    description,
+                    starts_at,
+                    ends_at,
+                    venue_id,
+                    organiser_id,
+                    created_at
+                """,
+                (
+                    payload.title,
+                    payload.description,
+                    payload.starts_at,
+                    payload.ends_at,
+                    payload.venue_id,
+                    current_user_id,  
+                )
+        )
+
+        event = cur.fetchone()
+        conn.commit()
 
     return {"event": event}

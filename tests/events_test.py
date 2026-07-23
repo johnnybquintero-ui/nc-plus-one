@@ -1,3 +1,5 @@
+from db.connection import get_connection
+
 def test_get_events_returns_200(client):
     response = client.get("/api/events")
     assert response.status_code == 200
@@ -56,3 +58,118 @@ def test_get_event_returns_422_if_id_is_not_int(client):
     response = client.get(f"/api/events/{event_id}")
 
     assert response.status_code == 422
+
+def test_create_event_returns_with_201_and_created_event(
+    client,
+    sample_user,
+    auth_headers,
+):
+    new_event = {
+        "title": "Summer Rooftop Social",
+        "description": "An evening of networking and good vibes.",
+        "starts_at": "2026-08-15T18:00:00Z",
+        "ends_at": "2026-08-15T21:00:00Z",
+        "venue_id": 2,
+    }
+
+    response = client.post(
+        "/api/events",
+        headers=auth_headers,
+        json=new_event,
+    )
+
+    assert response.status_code == 201
+
+    event = response.json()["event"]
+
+    assert event["title"] == new_event["title"]
+    assert event["description"] == new_event["description"]
+    assert event["venue_id"] == new_event["venue_id"]
+    assert event["organiser_id"] == sample_user["id"]
+    assert "id" in event
+    assert "created_at" in event
+
+def test_create_event_derives_organiser_id_from_token(
+    client,
+    sample_user,
+    auth_headers,
+):
+    new_event = {
+        "title": "Token Ownership Test",
+        "description": "Testing that organiser_id comes from the JWT.",
+        "starts_at": "2026-08-15T18:00:00Z",
+        "ends_at": "2026-08-15T21:00:00Z",
+        "venue_id": 2,
+        "organiser_id": 9999,
+    }
+
+    response = client.post(
+        "/api/events",
+        headers=auth_headers,
+        json=new_event,
+    )
+
+    assert response.status_code == 201
+
+    event = response.json()["event"]
+
+    assert event["organiser_id"] == sample_user["id"]
+    assert event["organiser_id"] != new_event["organiser_id"]
+
+def test_create_event_returns_401_without_valid_token(
+    client,
+    auth_headers,
+):
+    new_event = {
+            "title": "Invalid Token Test",
+            "description": "Testing that invalid token returns 401",
+            "starts_at": "2026-08-15T18:00:00Z",
+            "ends_at": "2026-08-15T21:00:00Z",
+            "venue_id": 2,
+            "organiser_id": 1,
+        }
+    
+    response = client.post(
+        "/api/events",
+        headers={
+            "Authorization": "Bearer not-a-real-token"
+        },
+        json=new_event,
+    )
+    
+    assert response.status_code == 401
+
+def test_create_event_returns_400_with_malformed_fields(
+    client,
+    auth_headers,
+):
+    new_event = {
+        "title": 1234,
+        "description": 5678,
+        "starts_at": "NOT A TIME!",
+        "ends_at": "NOT A TIME!",
+        "venue_id": "DAVID",
+        "organiser_id": "BRENT",
+    }
+
+    response = client.post(
+        "/api/events",
+        headers=auth_headers,
+        json=new_event,
+    )
+
+    assert response.status_code == 400
+
+def test_create_event_returns_400_with_missing_fields(
+    client,
+    auth_headers,
+):
+    new_event = {}
+
+    response = client.post(
+        "/api/events",
+        headers=auth_headers,
+        json=new_event,
+    )
+
+    assert response.status_code == 400
