@@ -16,3 +16,10 @@ class CreateEventRequest(BaseModel):
     starts_at: datetime
     ends_at: datetime
     venue_id: int
+
+class UpdateEventRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    starts_at: datetime | None = None
+    ends_at: datetime | None = None
+    venue_id: int | None = None

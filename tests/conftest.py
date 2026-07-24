@@ -121,17 +121,28 @@ def cleanup_users():
                 conn.commit()
 
 @pytest.fixture
-def sample_event():
+def auth_headers(sample_user):
+    token = create_access_token(sample_user["id"])
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
+
+@pytest.fixture
+def sample_event(sample_user):
     """
-    Create a temporary event in the test database.
+    Create a temporary event owned by the temporary test user.
     """
 
     event = {
         "title": "Real Python demo for Junior Data Engineers",
-        "description": "A hands-on workshop introducing junior data engineers to Python fundamentals, APIs and PostgreSQL.",
+        "description": (
+            "A hands-on workshop introducing junior data engineers "
+            "to Python fundamentals, APIs and PostgreSQL."
+        ),
         "starts_at": "2026-10-10T09:00:00+01:00",
         "ends_at": "2026-10-10T17:00:00+01:00",
-        "organiser_id": 1,
+        "organiser_id": sample_user["id"],
         "venue_id": 2,
     }
 
@@ -139,7 +150,14 @@ def sample_event():
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO events (title, description, starts_at, ends_at, organiser_id, venue_id)
+                INSERT INTO events (
+                    title,
+                    description,
+                    starts_at,
+                    ends_at,
+                    organiser_id,
+                    venue_id
+                )
                 VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id
                 """,
@@ -156,24 +174,19 @@ def sample_event():
             event["id"] = cur.fetchone()["id"]
             conn.commit()
 
-            yield event
+    try:
+        yield event
+    finally:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM rsvps WHERE event_id = %s",
+                    (event["id"],),
+                )
 
-            cur.execute(
-                "DELETE FROM rsvps WHERE event_id = %s",
-                (event["id"],),
-            )
+                cur.execute(
+                    "DELETE FROM events WHERE id = %s",
+                    (event["id"],),
+                )
 
-            cur.execute(
-                "DELETE FROM events WHERE id = %s",
-                (event["id"],),
-            )
-
-            conn.commit()
-
-@pytest.fixture
-def auth_headers(sample_user):
-    token = create_access_token(sample_user["id"])
-
-    return {
-        "Authorization": f"Bearer {token}"
-    }
+                conn.commit()
