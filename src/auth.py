@@ -59,8 +59,7 @@ def login_user(payload:CredentialsRequest):
             (payload.email,),
         )
         row = cur.fetchone()
-        print(row)
-        print(type(row))
+
         if row is None or not verify_password(payload.password, row["password"]):
             raise HTTPException(status_code=401, detail="Invalid email or password")
         

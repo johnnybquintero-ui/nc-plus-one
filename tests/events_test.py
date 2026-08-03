@@ -370,3 +370,84 @@ def test_update_event_returns_400_for_invalid_date_format(
     )
 
     assert response.status_code == 400
+
+def test_get_attendees_by_event_id_returns_200_and_attendees_list(
+        client,
+        sample_event,
+        auth_headers,
+        attendee_user,
+        sample_rsvp,
+):
+    response = client.get(
+        f"/api/events/{sample_event['id']}/attendees",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 200
+
+    attendees = response.json()["attendees"]
+
+    assert isinstance(attendees, list)
+    assert len(attendees) == 1
+
+    assert attendees[0]["id"] == attendee_user["id"]
+    assert attendees[0]["name"] == attendee_user["name"]
+    assert attendees[0]["email"] == attendee_user["email"]
+    for attendee in attendees:
+        assert "password" not in attendee
+
+def test_get_attendees_by_event_id_returns_401_for_missing_or_invalid_token(
+        client,
+        sample_event,
+):
+    response_1 = client.get(
+        f"/api/events/{sample_event['id']}/attendees",
+    )
+
+    assert response_1.status_code == 401
+
+    response_2 = client.get(
+        f"api/events/{sample_event['id']}/attendees",
+        headers = {
+            "Authorisation": "Bearer not-a-real-token",
+        },
+    )
+
+    assert response_2.status_code == 401
+
+def test_get_attendees_by_event_id_returns_403_for_authenticated_user_who_is_not_the_organiser(
+    client,
+    sample_event,
+    attendee_user,
+):
+    login = client.post(
+        "/api/auth/login",
+        json={
+            "email": attendee_user["email"],
+            "password": attendee_user["password"],
+        },
+    )
+
+    assert login.status_code == 200, login.json()
+
+    token = login.json()["access_token"]
+
+    response = client.get(
+        f"/api/events/{sample_event['id']}/attendees",
+        headers={
+            "Authorization": f"Bearer {token}",
+        },
+    )
+
+    assert response.status_code == 403
+
+def test_get_attendees_by_event_id_returns_404_for_non_existent_event(
+    client,
+    auth_headers,
+):
+    response = client.get(
+        "/api/events/9999999/attendees",
+        headers=auth_headers,
+    )
+
+    assert response.status_code == 404

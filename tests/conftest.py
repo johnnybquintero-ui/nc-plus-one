@@ -190,3 +190,97 @@ def sample_event(sample_user):
                 )
 
                 conn.commit()
+
+@pytest.fixture
+def attendee_user():
+    password = "password123"
+    email = f"attendee-{uuid4()}@example.com"
+    user_id = None
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO users (email, password, name)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                    """,
+                    (
+                        email,
+                        hash_password(password),
+                        "Bob Jones",
+                    ),
+                )
+
+                user_id = cur.fetchone()["id"]
+
+            conn.commit()
+
+        yield {
+            "id": user_id,
+            "email": email,
+            "password": password,
+            "name": "Bob Jones",
+        }
+
+    finally:
+        if user_id is not None:
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "DELETE FROM rsvps WHERE attendee_id = %s",
+                        (user_id,),
+                    )
+
+                    cur.execute(
+                        "DELETE FROM users WHERE id = %s",
+                        (user_id,),
+                    )
+
+                conn.commit()
+
+@pytest.fixture
+def sample_rsvp(sample_event, attendee_user):
+    rsvp = {
+        "attendee_id": attendee_user["id"],
+        "event_id": sample_event["id"],
+    }
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO rsvps (
+                    attendee_id,
+                    event_id
+                )
+                VALUES (%s, %s)
+                RETURNING
+                    id,
+                    attendee_id,
+                    event_id,
+                    created_at
+                """,
+                (
+                    rsvp["attendee_id"],
+                    rsvp["event_id"],
+                ),
+            )
+
+            created_rsvp = cur.fetchone()
+
+        conn.commit()
+
+    try:
+        yield created_rsvp
+
+    finally:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM rsvps WHERE id = %s",
+                    (created_rsvp["id"],),
+                )
+
+            conn.commit()
