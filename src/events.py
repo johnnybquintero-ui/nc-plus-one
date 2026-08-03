@@ -269,3 +269,68 @@ def update_event(
     finally:
         conn.close()
     
+@router.get("/api/events/{event_id}/attendees")
+def get_event_attendees(
+    event_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    #Get the event
+    cur.execute("""
+                SELECT *
+                FROM events
+                WHERE id = %s
+                """,
+                (event_id,)
+                )
+    event = cur.fetchone()
+
+    #Check if the event exists
+    if event is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "NOT_FOUND",
+                "message": "Event not found",
+            },
+        )
+
+    #Verify that the organiser of the event is the same as the current user
+    if event["organiser_id"] != current_user_id:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "FORBIDDEN",
+                "message": "You are not authorised to view the attendees of this event",
+            },
+        )
+
+    cur.execute("""
+                SELECT
+                    rsvps.attendee_id,
+                    users.email,
+                    users.name
+                FROM rsvps
+                JOIN users ON rsvps.attendee_id = users.id
+                WHERE rsvps.event_id = %s
+                """,
+                (event_id,)
+                )
+    
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    attendees  = [
+        {
+            "id": row["attendee_id"],
+            "email": row["email"],
+            "name": row["name"],
+        }
+        for row in rows
+    ]
+
+    return {"attendees": attendees}
