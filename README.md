@@ -251,13 +251,15 @@ The seed script tears down any existing tables before recreating and repopulatin
 Start the FastAPI development server:
 
 ```bash
+source .venv/bin/activate
+export PYTHONPATH=$PWD
 uvicorn main:app --reload
 ```
 
 Once the server is running, the API will be available at:
 
 ```text
-http://127.0.0.1:8000
+http://127.0.0.1:8000/api/health
 ```
 
 Interactive API documentation can be accessed at:
